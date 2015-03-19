@@ -342,6 +342,31 @@ class PowerLayer : public NeuronLayer<Dtype> {
 };
 
 /**
+ * @brief LocMaskLayer multiplies a mask to locations
+ * Added by Arun Mallya
+ */
+template <typename Dtype>
+class LocMaskLayer : public NeuronLayer<Dtype> {
+ public:
+  explicit LocMaskLayer(const LayerParameter& param)
+      : NeuronLayer<Dtype>(param) {}
+
+  virtual inline const char* type() const { return "LocMask"; }
+  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline int MinTopBlobs() const { return 1; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {Forward_cpu(bottom,top);};
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {Backward_cpu(top, propagate_down, bottom);};
+};
+
+/**
  * @brief Rectified Linear Unit non-linearity @f$ y = \max(0, x) @f$.
  *        The simple max is fast to compute, and the function does not saturate.
  */
