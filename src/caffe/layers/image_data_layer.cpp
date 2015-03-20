@@ -35,11 +35,31 @@ void ImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const string& source = this->layer_param_.image_data_param().source();
   LOG(INFO) << "Opening file " << source;
   std::ifstream infile(source.c_str());
-  string filename;
-  int label;
-  while (infile >> filename >> label) {
-    lines_.push_back(std::make_pair(filename, label));
+
+  int label_size = -1;
+
+  // read line by line and parse each line
+  std::string line;
+  while (std::getline(infile, line)) {
+
+    string filename;
+    vector <double> labels;
+    double value;
+
+    // split line by first delimiter occurence
+    int loc = line.find(' ');
+    // get the filename
+    filename = line.substr(0, loc);
+    // get the labels
+    std::istringstream iss(line.substr(loc, line.length()));
+    while (iss >> value) {
+      labels.push_back(value);
+    }
+
+    lines_.push_back(std::make_pair(filename, labels));
+    label_size = labels.size();
   }
+
 
   if (this->layer_param_.image_data_param().shuffle()) {
     // randomly shuffle data
@@ -81,9 +101,12 @@ void ImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << top[0]->channels() << "," << top[0]->height() << ","
       << top[0]->width();
   // label
-  vector<int> label_shape(1, batch_size);
-  top[1]->Reshape(label_shape);
-  this->prefetch_label_.Reshape(label_shape);
+
+  //std::cout << "batchsize: " << batch_size << "\n";
+  //std::cout << "Label len: " << label_size << "\n";
+
+  top[1]->Reshape(batch_size, label_size, 1, 1);
+  this->prefetch_label_.Reshape(batch_size, label_size, 1, 1);
 }
 
 template <typename Dtype>
@@ -141,7 +164,10 @@ void ImageDataLayer<Dtype>::InternalThreadEntry() {
     this->data_transformer_->Transform(cv_img, &(this->transformed_data_));
     trans_time += timer.MicroSeconds();
 
-    prefetch_label[item_id] = lines_[lines_id_].second;
+    offset = this->prefetch_label_.offset(item_id);
+    vector<double> labels = lines_[lines_id_].second;
+    for(int count = 0; count < labels.size(); count ++)
+      prefetch_label[offset + count] = labels[count];
     // go to the next iter
     lines_id_++;
     if (lines_id_ >= lines_size) {

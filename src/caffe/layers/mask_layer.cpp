@@ -40,15 +40,20 @@ void LocMaskLayer<Dtype>::Forward_cpu(
   const Dtype* bottom_mask = bottom[1]->cpu_data();
   Dtype* top_data          = top[0]->mutable_cpu_data(); // values to be sent above
 
-//  const int count = bottom[1]->count(); // number of values in the mask
-/*  for (int i = 0; i < count; ++i) {
-    std::cout << bottom_mask[i] << ", ";
-  }
-  std::cout << "\n";*/
+
   const vector<int> bottom_shape = bottom[0]->shape(); // N, C, H, W
   const vector<int> mask_shape = bottom[1]->shape(); // N, C, H, W
-//  int length = mask_shape[1];
-/*  std::cout << "mask length " <<  length << std::endl;
+
+
+/*
+  std::cout << "Mask: " ;
+  for (int n = 0; n < mask_shape[0]; ++n) {
+      for (int i = 0; i < mask_shape[1]; ++i) {
+          std::cout << bottom_mask[n*mask_shape[1]+i] << ", ";
+      }
+      std::cout << "\n";
+  }
+
 
   std::cout << "Bottom: " ;
   for (int n = 0; n < bottom_shape[0]; ++n) {
@@ -56,8 +61,8 @@ void LocMaskLayer<Dtype>::Forward_cpu(
           std::cout << bottom_data[n*bottom_shape[1]+i] << ", ";
       }
       std::cout << "\n";
-      }*/
-
+  }
+*/
   for (int n = 0; n < bottom_shape[0]; ++n) {
       for(int k = 0; k < mask_shape[1]; ++k){
 
@@ -74,7 +79,8 @@ void LocMaskLayer<Dtype>::Forward_cpu(
 
       }
   }
-/*  std::cout << "top: " ;
+  /*
+  std::cout << "top: " ;
   for (int n = 0; n < bottom_shape[0]; ++n) {
       for (int i = 0; i < bottom_shape[1]; ++i) {
           std::cout << top_data[n*bottom_shape[1]+i] << ", ";
@@ -84,12 +90,6 @@ void LocMaskLayer<Dtype>::Forward_cpu(
 
   int tmp;
   std:: cin >>  tmp;*/
-  /*
-  for (int i = 0; i < count; ++i) {
-    top_data[2*i]   = bottom_mask[i] * bottom_data[2*i];   // y'i = mi * xi
-    top_data[2*i+1] = bottom_mask[i] * bottom_data[2*i+1]; // y'i = mi * yi
-    }*/
-
 }
 
 template <typename Dtype>

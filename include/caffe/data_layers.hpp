@@ -171,6 +171,8 @@ class HDF5DataLayer : public Layer<Dtype> {
   unsigned int current_file_;
   hsize_t current_row_;
   std::vector<shared_ptr<Blob<Dtype> > > hdf_blobs_;
+  std::vector<unsigned int> data_permutation_;
+  std::vector<unsigned int> file_permutation_;
 };
 
 /**
@@ -238,7 +240,7 @@ class ImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
   virtual void ShuffleImages();
   virtual void InternalThreadEntry();
 
-  vector<std::pair<std::string, int> > lines_;
+  vector<std::pair<std::string, std::vector<double> > > lines_;
   int lines_id_;
 };
 
